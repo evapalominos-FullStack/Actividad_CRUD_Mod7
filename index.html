@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>CRUD Clientes Estandarizado</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; background: #eee; }
+        section { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        input { width: 90%; margin-bottom: 10px; padding: 5px; }
+        .res-box { grid-column: 1 / -1; background: #333; color: #0f0; padding: 15px; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+    <section>
+        <h3>Crear / Consultar</h3>
+        <input type="text" id="rut" placeholder="RUT">
+        <input type="text" id="nombre" placeholder="Nombre">
+        <input type="number" id="edad" placeholder="Edad">
+        <button onclick="ejecutar('POST')">Crear</button>
+        <button onclick="ejecutar('GET')">Filtrar/Ver</button>
+    </section>
+
+    <section>
+        <h3>Modificar Nombre</h3>
+        <input type="text" id="m_rut" placeholder="RUT a modificar">
+        <input type="text" id="m_nombre" placeholder="Nuevo Nombre">
+        <button onclick="ejecutar('PUT')">Actualizar</button>
+    </section>
+
+    <section>
+        <h3>Eliminar (Criterio único)</h3>
+        <input type="text" id="e_val" placeholder="Valor (RUT, Nombre o Edad)">
+        <select id="e_tipo"><option value="rut">RUT</option><option value="nombre">Nombre</option><option value="edad">Edad</option></select>
+        <button onclick="ejecutar('DELETE')">Eliminar</button>
+    </section>
+
+    <div class="res-box" id="consola">Esperando acción...</div>
+
+    <script>
+        const log = (msg) => document.getElementById('consola').innerText = JSON.stringify(msg, null, 2);
+
+        async function ejecutar(metodo) {
+            let url = '/clientes';
+            let config = { method: metodo, headers: {'Content-Type': 'application/json'} };
+
+            if (metodo === 'GET') {
+                const p = new URLSearchParams();
+                if (rut.value) p.append('rut', rut.value);
+                else if (nombre.value) p.append('nombre', nombre.value);
+                else if (edad.value) p.append('edad', edad.value);
+                url += `?${p.toString()}`;
+            } 
+            else if (metodo === 'POST') {
+                config.body = JSON.stringify({ rut: rut.value, nombre: nombre.value, edad: parseInt(edad.value) });
+            }
+            else if (metodo === 'PUT') {
+                url += `/${m_rut.value}`;
+                config.body = JSON.stringify({ nombre: m_nombre.value });
+            }
+            else if (metodo === 'DELETE') {
+                url += `?${e_tipo.value}=${e_val.value}`;
+            }
+
+            const res = await fetch(url, config);
+            const data = await res.json();
+            log(data);
+        }
+    </script>
+</body>
+</html>
